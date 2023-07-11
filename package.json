@@ -1,0 +1,38 @@
+{
+  "name": "CAPM_madhu",
+  "version": "0.0.1",
+  "description": "CAPM_madhu",
+  "dependencies": {
+    "@sap/audit-logging": "^3",
+    "@sap/cds": "^5",
+    "@sap/hana-client": "^2",
+    "debug": "^4.3",
+    "express": "^4",
+    "hdb": "^0.19.5",
+    "passport": "^0.6.0"
+  },
+  "devDependencies": {
+    "sqlite3": "5.0.0"
+  },
+  "scripts": {
+    "start": "npx cds run"
+  },
+  "cds": {
+    "requires": {
+      "db": {
+        "kind": "hana"
+      },
+      "uaa": {
+        "kind": "xsuaa"
+      },
+      "auth": {
+        "[production]": {
+          "strategy": "JWT"
+        }
+      }
+    },
+    "hana": {
+      "deploy-format": "hdbtable"
+    }
+  }
+}

@@ -1,0 +1,75 @@
+_schema-version: '3.2'
+ID: CAPM_madhu
+version: 0.0.1
+
+modules:
+  - name: CAPM_madhu-db-deployer
+    type: hdb
+    path: gen/db
+    requires:
+      - name: CAPM_madhu-db
+        properties:
+          TARGET_CONTAINER: CAPM_madhu_HDI
+      - name: uaa_CAPM_madhu
+    parameters:
+      buildpack: nodejs_buildpack
+
+  - name: CAPM_madhu-srv
+    type: nodejs
+    path: gen/srv
+    requires:
+      - name: CAPM_madhu-db
+      - name: uaa_CAPM_madhu
+    provides:
+      - name: srv-api
+        properties:
+          srv-url: '${default-url}'
+    parameters:
+      buildpack: nodejs_buildpack
+
+  - name: capm-madhu-approuter
+    type: approuter.nodejs
+    path: capm-madhu-approuter
+    requires:
+      - name: CAPM_madhu_html_repo_runtime
+      - name: uaa_CAPM_madhu
+    parameters:
+      disk-quota: 256M
+      memory: 256M
+
+resources:
+  - name: CAPM_madhu-db
+    type: com.sap.xs.hdi-container
+    parameters:
+      config:
+        schema: CAPM_madhu_HDI
+      service: hana
+      service-name: CAPM_madhu_HDI
+      service-plan: hdi-shared
+    properties:
+      hdi-service-name: '${service-name}'
+  
+  
+  - name: CAPM_madhu_html_repo_runtime
+    type: org.cloudfoundry.managed-service
+    parameters:
+      service: html5-apps-repo
+      service-plan: app-runtime
+  
+  
+  - name: uaa_CAPM_madhu
+    type: org.cloudfoundry.managed-service
+    parameters:
+      path: ./xs-security.json
+      service: xsuaa
+      service-name: CAPM_madhu-xsuaa-service
+      service-plan: application
+      
+parameters:
+  enable-parallel-deployments: true
+build-parameters:
+  before-all:
+    - builder: custom
+      commands:
+        - npm install --production
+        - npx -p @sap/cds-dk cds build --production
